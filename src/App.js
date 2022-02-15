@@ -15,11 +15,11 @@ class App extends React.Component {
       academicInstitutions: [],
       academicUnits: []
     }
-    this.handleGetUnits = this.handleGetUnits.bind(this);
+    this.handleGetStudies = this.handleGetStudies.bind(this);
   }
 
   componentDidMount() {
-    axios.get("https://polon.nauka.gov.pl/opi-ws/api/academicInstitutions?status=OPERATING")
+    axios.get('https://polon.nauka.gov.pl/opi-ws/api/academicInstitutions?status=OPERATING')
       .then(response => {
         this.setState({ 
           academicInstitutions: response.data.institutions
@@ -27,12 +27,21 @@ class App extends React.Component {
       })
   }
 
-  handleGetUnits(uid) {
-    axios.get("https://polon.nauka.gov.pl/opi-ws/api/studies?institutionUid=" + uid )
+  handleGetStudies(uid) {
+    const params =
+    axios.get('https://polon.nauka.gov.pl/opi-ws/api/studies?filters={"institutionUid":"' + uid + '", "level":"I_STOPNIA", "profile":"GENERAL", "form":"STACJONARNE"}&pageSize=1000')
       .then(response => {
         this.setState({ 
-          academicUnits: response.data.units
+          academicUnits: response.data.studies
         });
+
+        let result = response.data.studies.reduce(function (r, a) {
+            r[a.name] = r[a.name] || [];
+            r[a.name].push(a);
+            return r;
+        }, Object.create(null));
+
+        console.log(result);
       })
   }
 
@@ -54,7 +63,7 @@ class App extends React.Component {
                 getOptionLabel={options => options.name}
                 onChange={(event, option) => {
                   console.log(option)
-                  // this.handleGetUnits(option.uid)
+                  this.handleGetStudies(option.uid)
                 }}
                 sx={{ width: 500 }}
                 renderInput={(params) => <TextField {...params} label="Uczelnie..." />}
